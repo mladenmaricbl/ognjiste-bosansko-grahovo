@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Mountain } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo.png";
 
 const navLinks = [
   { href: "/", label: "Početna" },
@@ -21,11 +22,12 @@ export function Navbar() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <Mountain className="h-7 w-7 text-primary transition-transform group-hover:scale-110" />
-            <span className="font-serif text-lg md:text-xl font-semibold text-foreground">
-              Ognjište
-            </span>
+          <Link to="/" className="flex items-center group">
+            <img 
+              src={logo} 
+              alt="Ognjište Bosansko Grahovo" 
+              className="h-12 md:h-16 w-auto transition-transform group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Navigation */}
