@@ -8,7 +8,7 @@ const mountains = [
   {
     name: "Dinara",
     altitude: "1.831 m",
-    description: "Najviši vrh Hrvatske, ali pristupačan iz Bosanskog Grahova. Dinara je raj za planinare s brojnim stazama koje nude spektakularne poglede na Jadransko more i unutrašnjost. Uspon na vrh je izazovan ali nezaboravan.",
+    description: "DINARA je najznačajnija i najpoznatija grahovska planina, pod čijim se obroncima smjestio i sam grad. Dugačka preko osamdeset kilometara, Dinara je majka svih dinarskih planina-planina po kojoj je masiv Dinarida i dobio ime. Ogromna kraška teritorija Dinare čini nestvarno prostranstvo. Dom je najraznovrsnijih krečnjačkih, kraških prirodnih oblika, koji daju posebno obelježje njenom reljefu. Horizontom iz Grahova i okoline dominiraju vrhovi Veliki Bat (1854m n.v.) i Sinjal (1831 m n.v.), dok se najviši vrh Dinare, Troglav (1913m n.v.) ponosno uzdiže iznad Livanjskog polja. Dinara je prirodna granica između Bosanske Krajine i Dalmacije, Bosne i Hrvatske, vjekovima je predstavljala granicu, među između svjetova i civilizacija, vjera i naroda. Besputna prostranstva Dinare nisu za svakoga, ali onome ko umije da gleda, sluša i shvati svoj položaj pred kolosalnom prirodnom veličinom, ona otvara sva vrata i sve svoje ljepote. Od Troglava do crnoluških Točila, od Bata do Sinjala, od prevoja Derala do obronaka Dinare u koje spadaju i grahovska Gradina i Pečenački kuk, nižu se beskrajne ljepote Dinare.",
     highlights: ["Panoramski pogledi", "Planinarenje", "Netaknuta priroda", "Endemske biljke"],
     image: dinaraImage,
     reverse: false,
