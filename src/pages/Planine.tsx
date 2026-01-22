@@ -3,6 +3,9 @@ import { Compass, TrendingUp, Sun, Wind } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import dinaraImage from "@/assets/dinara-mountain.jpg";
 import satorImage from "@/assets/sator-mountain.jpg";
+import uilicaImage from "@/assets/uilica-mountain.jpg";
+import jadovnikImage from "@/assets/jadovnik-mountain.jpg";
+import staretinaImage from "@/assets/staretina-mountain.jpg";
 
 const mountains = [
   {
@@ -20,6 +23,30 @@ const mountains = [
     highlights: ["Planinska jezera", "Guste šume", "Divlje životinje", "Kampiranje"],
     image: satorImage,
     reverse: true,
+  },
+  {
+    name: "Uilica",
+    altitude: "1.654 m",
+    description: "UILICA (UJILICA) se nastavlja sjeverno od Dinare i prevoja Derala, iako je neki geolozi smatraju krajnjim sjevernim ogrankom Dinare, ona je zbog svojih karakteristika ipak zasebna planina. Pruža se od okoline Derala pa do Ličke Kaldrme. Najviši vrhovi Uilice su Veliki vrh/Plana ili Bursać (1654m n.v.), Gologlav/Goli bat (1623m n.v.), Jarića vrh (1604m n.v.), Sokolova gredas (1498m n.v.) i drugi. Za Uilicu je karakteristično da se guste belogorične šume prostiru samim grebenom planine. Velike formacije stjena dominiraju horizontom iznad sela Peći i Tiškovca, dok su iznad Resanovaca i prema ličkoj strani guste šume koje se izdižu iz polja u valovitim visovima te daju prelijep ton pejzažu. Sa vrhova Uilice pruža se veličanstven pogled na Bosnu, Liku, Dalmaciju i Jadransko more. Nedaleko od Uilice je i predivno Babića jezero. Brojna divljač naseljava Uilicu, bogata je životinjskim i biljnim svjetom.",
+    highlights: ["Panoramski vidici", "Belogorične šume", "Babića jezero", "Divljač"],
+    image: uilicaImage,
+    reverse: false,
+  },
+  {
+    name: "Jadovnik",
+    altitude: "1.650 m",
+    description: "JADOVNIK, često u kartama označavan i kao Vijenac, pruža se sjeveroistično od Bosanskog Grahova, i gledano iz grada potpuno dominira horizontom, pošto su od svih pobrojanih planina, njegovi vrhovi najbliži gradu. Podaci o najvišem vrhu Jadovnika, Lisini, variraju, najčešće se u kartama spominje podatak od 1650m n.v, ali se pominju i podaci o 1656 i 1666m n.v. Jadovnik je sa grahovske strane krševit, siromašan šumom sa dosta nižeg rastinja i krša, a sa gustim šumama tek na većim visinama i pod samim vrhovima, dok se prema Drvaru spušta u velikim šumskim površinama. Ali zato ljepotu pejzaža kod Grahova posebno dopunjuju vrhovi Jadovnika. Dok putujete od Resanovaca, Peći i Borovače ka Bosanskom Grahovu, jedan za drugim nakon Golog vrha počinju da vam se ukazuju stjenoviti vrhunci Jadovnika, koji se poput džinovskih kapa uzdižu iznad Bosanskog Grahova. Jadovnik i Uilica, gotovo identične visine, stoje jedno naspram drugoga, razdvojeni samo poljem širine nekoliko kilometara, te tako čine jedan od najljepših grahovskih pejzaža.",
+    highlights: ["Stjenoviti vrhovi", "Krški reljef", "Panorama grada", "Šumski predjeli"],
+    image: jadovnikImage,
+    reverse: true,
+  },
+  {
+    name: "Staretina",
+    altitude: "1.700 m",
+    description: "STARETINA je planina koja se poput zida pruža iznad Livanjskog polja, i isto dijeli od Glamočkog polja. Staretina je planina šatorsko-golijskog niza (nalazi se između Šatora i Golije, na koje se i naslanja) i slično Jadovniku, jedan njen dio je krševit, prekriven pašnjacima i kraškim oblicima reljefa, dok drugi dio planine pokrivaju guste šume. Travnati i šumoviti pejzaži Staretine su vrlo ugodni oku, a posebno njeni vidici, specifični usled njenog položaja koji joj pruža dominantnu poziciju iznad dva velika polja. Pejzaži Staretine odišu mirom i širinom velikog prostranstva. Šteta što je Staretina u poslednjem ratu posijana minskim poljima, te predstavlja najnerazminiraniju oblast u ovom dijelu Evrope, te treba biti vrlo oprezan kada se kreće njenim stazama.",
+    highlights: ["Dominantni vidici", "Pašnjaci", "Šumoviti predjeli", "Kraški reljef"],
+    image: staretinaImage,
+    reverse: false,
   },
 ];
 
