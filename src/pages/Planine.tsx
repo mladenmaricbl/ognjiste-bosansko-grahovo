@@ -16,7 +16,7 @@ const mountains = [
   {
     name: "Šator",
     altitude: "1.872 m",
-    description: "Mistična planina s gustim šumama i prekrasnim planinskim jezerima. Šator je poznat po svojoj divljoj ljepoti i brojnim legendama koje se vežu uz ovu planinu. Idealno odredište za one koji traže mir i povezanost s prirodom.",
+    description: "Šatorsko jezero je jezero na planini Šator u zapadnoj Federaciji Bosne i Hercegovine, BiH. Nalazi se na visini od 1488 m nmv. Dugačko je 280 m, široko 150 m, a duboko oko 8 m. Jezero je jedno od najljepših planinskih jezera u Bosni i Hercegovini. Zaleđeno je od decembra do aprila. Na dnu jezera su biljke potamogeton, i zbog njih se jezero providi i do 4 metra, skroz do dna osim u najdubljim dijelovima. Iz njega izvire Mlinski potok od kojeg kad se spoji sa Šatorskim potokom nastaje rijeka Unac.",
     highlights: ["Planinska jezera", "Guste šume", "Divlje životinje", "Kampiranje"],
     image: satorImage,
     reverse: true,
