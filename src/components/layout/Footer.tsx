@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Mountain, Facebook, Instagram, Mail, MapPin } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const quickLinks = [
   { href: "/", label: "Početna" },
@@ -16,11 +17,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <Mountain className="h-8 w-8 text-primary-foreground/90" />
-              <span className="font-serif text-xl font-semibold">
-                Ognjište Bosansko Grahovo
-              </span>
+            <Link to="/" className="inline-block">
+              <img 
+                src={logo} 
+                alt="Ognjište Bosansko Grahovo" 
+                className="h-20 w-auto brightness-0 invert"
+              />
             </Link>
             <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-sm">
               Otkrijte prirodne ljepote, bogatu baštinu i gostoljubivost našeg kraja.
