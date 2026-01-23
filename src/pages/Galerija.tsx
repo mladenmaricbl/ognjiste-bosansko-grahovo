@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, ZoomIn, Trash2, Upload, LogOut, LogIn } from "lucide-react";
-import { Link } from "react-router-dom";
+import { X, Plus, ZoomIn, Trash2, Upload } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,35 +187,15 @@ export default function Galerija() {
               Uživajte u fotografijama koje prikazuju ljepote našeg kraja.
             </p>
             
-            <div className="flex items-center justify-center gap-3">
-              {isAdmin && (
-                <Button
-                  onClick={() => setShowUploadModal(true)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-                >
-                  <Plus className="h-5 w-5" />
-                  Dodaj sliku
-                </Button>
-              )}
-              
-              {user ? (
-                <Button
-                  variant="outline"
-                  onClick={() => signOut()}
-                  className="gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Odjavi se
-                </Button>
-              ) : (
-                <Link to="/login">
-                  <Button variant="outline" className="gap-2">
-                    <LogIn className="h-4 w-4" />
-                    Admin prijava
-                  </Button>
-                </Link>
-              )}
-            </div>
+            {isAdmin && (
+              <Button
+                onClick={() => setShowUploadModal(true)}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+              >
+                <Plus className="h-5 w-5" />
+                Dodaj sliku
+              </Button>
+            )}
           </motion.div>
         </div>
       </section>
