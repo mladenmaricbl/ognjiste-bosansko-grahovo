@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 
 const navLinks = [
@@ -16,6 +17,7 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -46,6 +48,25 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
+            {/* Admin Login/Logout Icon */}
+            {user ? (
+              <button
+                onClick={() => signOut()}
+                className="ml-2 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                title="Odjavi se"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="ml-2 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                title="Admin prijava"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -84,6 +105,29 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              
+              {/* Mobile Admin Login/Logout */}
+              {user ? (
+                <button
+                  onClick={() => {
+                    signOut();
+                    setIsOpen(false);
+                  }}
+                  className="flex items-center gap-2 w-full px-4 py-3 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
+                  <LogOut className="h-5 w-5" />
+                  Odjavi se
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 px-4 py-3 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
+                  <User className="h-5 w-5" />
+                  Admin prijava
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
