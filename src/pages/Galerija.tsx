@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, ZoomIn, Trash2, Upload } from "lucide-react";
+import { X, Plus, ZoomIn, Trash2, Upload, ImagePlus } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 import heroImage from "@/assets/hero-mountains.jpg";
 import dinaraImage from "@/assets/dinara-mountain.jpg";
 import satorImage from "@/assets/sator-mountain.jpg";
@@ -34,16 +33,18 @@ const staticImages = [
   { src: townCenter, alt: "Centar grada", category: "Grad" },
 ];
 
+const MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
+
 export default function Galerija() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [dbImages, setDbImages] = useState<GalleryImage[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [title, setTitle] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { isAdmin } = useAdmin();
   const { toast } = useToast();
 
@@ -66,52 +67,90 @@ export default function Galerija() {
   }
 
   async function handleUpload() {
-    if (!selectedFile) {
+    if (selectedFiles.length === 0) {
       toast({
         title: "Greška",
-        description: "Molimo odaberite sliku",
+        description: "Molimo odaberite barem jednu sliku",
         variant: "destructive",
       });
       return;
     }
 
     setUploading(true);
+    setUploadProgress(0);
+
+    const uploadedImages: GalleryImage[] = [];
+    let successCount = 0;
+    let errorCount = 0;
 
     try {
-      // Upload to storage
-      const fileExt = selectedFile.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `images/${fileName}`;
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        
+        try {
+          // Upload to storage
+          const fileExt = file.name.split(".").pop();
+          const fileName = `${Date.now()}-${i}.${fileExt}`;
+          const filePath = `images/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("gallery")
-        .upload(filePath, selectedFile);
+          const { error: uploadError } = await supabase.storage
+            .from("gallery")
+            .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("gallery")
-        .getPublicUrl(filePath);
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from("gallery")
+            .getPublicUrl(filePath);
 
-      // Insert into database
-      const { error: dbError } = await supabase.from("gallery_images").insert({
-        title: title || null,
-        image_url: urlData.publicUrl,
-        uploaded_by: user?.id,
-      });
+          // Insert into database
+          const { data: insertedData, error: dbError } = await supabase
+            .from("gallery_images")
+            .insert({
+              title: file.name.split(".")[0] || null,
+              image_url: urlData.publicUrl,
+              uploaded_by: user?.id,
+            })
+            .select()
+            .single();
 
-      if (dbError) throw dbError;
+          if (dbError) throw dbError;
 
-      toast({
-        title: "Uspješno",
-        description: "Slika je uspješno dodana",
-      });
+          if (insertedData) {
+            uploadedImages.push(insertedData);
+          }
+          
+          successCount++;
+        } catch (fileError) {
+          console.error(`Error uploading ${file.name}:`, fileError);
+          errorCount++;
+        }
+
+        // Update progress
+        setUploadProgress(Math.round(((i + 1) / selectedFiles.length) * 100));
+      }
+
+      // Immediately add uploaded images to state for instant display
+      if (uploadedImages.length > 0) {
+        setDbImages(prev => [...uploadedImages, ...prev]);
+      }
+
+      if (successCount > 0) {
+        toast({
+          title: "Uspješno",
+          description: `Učitano ${successCount} ${successCount === 1 ? 'slika' : 'slika'}${errorCount > 0 ? `, ${errorCount} neuspješno` : ''}`,
+        });
+      } else {
+        toast({
+          title: "Greška",
+          description: "Nijedna slika nije učitana",
+          variant: "destructive",
+        });
+      }
 
       setShowUploadModal(false);
-      setTitle("");
-      setSelectedFile(null);
-      fetchImages();
+      setSelectedFiles([]);
     } catch (error: any) {
       console.error("Upload error:", error);
       toast({
@@ -121,6 +160,7 @@ export default function Galerija() {
       });
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   }
 
@@ -146,12 +186,13 @@ export default function Galerija() {
 
       if (error) throw error;
 
+      // Immediately remove from state
+      setDbImages(prev => prev.filter(img => img.id !== image.id));
+
       toast({
         title: "Uspješno",
         description: "Slika je obrisana",
       });
-
-      fetchImages();
     } catch (error: any) {
       console.error("Delete error:", error);
       toast({
@@ -163,10 +204,32 @@ export default function Galerija() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+    const files = Array.from(e.target.files || []);
+    
+    if (files.length === 0) return;
+
+    // Calculate total size
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    
+    if (totalSize > MAX_TOTAL_SIZE) {
+      toast({
+        title: "Previše velika veličina",
+        description: `Ukupna veličina slika prelazi 100MB. Trenutno: ${(totalSize / (1024 * 1024)).toFixed(1)}MB`,
+        variant: "destructive",
+      });
+      return;
     }
+
+    setSelectedFiles(files);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getTotalSize = () => {
+    const totalBytes = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+    return (totalBytes / (1024 * 1024)).toFixed(1);
   };
 
   return (
@@ -193,7 +256,7 @@ export default function Galerija() {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
               >
                 <Plus className="h-5 w-5" />
-                Dodaj sliku
+                Dodaj slike
               </Button>
             )}
           </motion.div>
@@ -212,9 +275,8 @@ export default function Galerija() {
                 <motion.div
                   key={image.id}
                   initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.05 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
                   className="relative group cursor-pointer overflow-hidden rounded-lg"
                 >
                   <img
@@ -325,71 +387,100 @@ export default function Galerija() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4"
-            onClick={() => setShowUploadModal(false)}
+            onClick={() => !uploading && setShowUploadModal(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-background rounded-xl p-6 md:p-8 max-w-md w-full shadow-xl"
+              className="bg-background rounded-xl p-6 md:p-8 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-serif text-2xl font-semibold text-foreground">
-                  Dodaj sliku
+                  Dodaj slike
                 </h3>
                 <button
-                  onClick={() => setShowUploadModal(false)}
+                  onClick={() => !uploading && setShowUploadModal(false)}
                   className="p-1 hover:bg-muted rounded-full transition-colors"
+                  disabled={uploading}
                 >
                   <X className="h-5 w-5 text-muted-foreground" />
                 </button>
               </div>
 
               <div className="space-y-4 mb-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Naslov (opcionalno)</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Npr. Pogled na Dinaru"
-                  />
-                </div>
-
                 <div
                   className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => !uploading && fileInputRef.current?.click()}
                 >
-                  {selectedFile ? (
-                    <div className="space-y-2">
-                      <Upload className="h-12 w-12 text-primary mx-auto" />
-                      <p className="text-foreground font-medium">
-                        {selectedFile.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Kliknite za promjenu
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <Plus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground mb-2">
-                        Kliknite za odabir slike
-                      </p>
-                      <p className="text-sm text-muted-foreground/70">
-                        JPG, PNG do 10MB
-                      </p>
-                    </>
-                  )}
+                  <ImagePlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-2">
+                    Kliknite za odabir slika
+                  </p>
+                  <p className="text-sm text-muted-foreground/70">
+                    JPG, PNG - ukupno do 100MB
+                  </p>
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleFileChange}
                     className="hidden"
+                    disabled={uploading}
                   />
                 </div>
+
+                {/* Selected files list */}
+                {selectedFiles.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-foreground font-medium">
+                        Odabrano: {selectedFiles.length} {selectedFiles.length === 1 ? 'slika' : 'slika'}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {getTotalSize()} MB / 100 MB
+                      </span>
+                    </div>
+                    <div className="max-h-40 overflow-y-auto space-y-1">
+                      {selectedFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-muted/50 rounded-md px-3 py-2"
+                        >
+                          <span className="text-sm text-foreground truncate flex-1 mr-2">
+                            {file.name}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              {(file.size / (1024 * 1024)).toFixed(1)} MB
+                            </span>
+                            {!uploading && (
+                              <button
+                                onClick={() => removeFile(index)}
+                                className="p-1 hover:bg-destructive/20 rounded transition-colors"
+                              >
+                                <X className="h-4 w-4 text-destructive" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload progress */}
+                {uploading && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-foreground">Učitavanje...</span>
+                      <span className="text-muted-foreground">{uploadProgress}%</span>
+                    </div>
+                    <Progress value={uploadProgress} className="h-2" />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3">
@@ -398,18 +489,18 @@ export default function Galerija() {
                   className="flex-1"
                   onClick={() => {
                     setShowUploadModal(false);
-                    setSelectedFile(null);
-                    setTitle("");
+                    setSelectedFiles([]);
                   }}
+                  disabled={uploading}
                 >
                   Odustani
                 </Button>
                 <Button
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={handleUpload}
-                  disabled={uploading || !selectedFile}
+                  disabled={uploading || selectedFiles.length === 0}
                 >
-                  {uploading ? "Učitavanje..." : "Učitaj"}
+                  {uploading ? "Učitavanje..." : `Učitaj (${selectedFiles.length})`}
                 </Button>
               </div>
             </motion.div>
