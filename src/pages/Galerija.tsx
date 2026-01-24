@@ -88,43 +88,74 @@ export default function Galerija() {
         const file = selectedFiles[i];
         
         try {
-          // Upload to storage
-          const fileExt = file.name.split(".").pop();
-          const fileName = `${Date.now()}-${i}.${fileExt}`;
+          // Generate unique filename with random string to avoid collisions
+          const fileExt = file.name.split(".").pop()?.toLowerCase() || 'jpg';
+          const randomId = Math.random().toString(36).substring(2, 10);
+          const fileName = `${Date.now()}-${randomId}-${i}.${fileExt}`;
           const filePath = `images/${fileName}`;
 
-          const { error: uploadError } = await supabase.storage
-            .from("gallery")
-            .upload(filePath, file);
+          console.log(`Uploading file ${i + 1}/${selectedFiles.length}: ${file.name} -> ${filePath}`);
 
-          if (uploadError) throw uploadError;
+          const { error: uploadError, data: uploadData } = await supabase.storage
+            .from("gallery")
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (uploadError) {
+            console.error(`Storage upload error for ${file.name}:`, uploadError);
+            throw uploadError;
+          }
+
+          console.log(`Storage upload successful for ${file.name}:`, uploadData);
 
           // Get public URL
           const { data: urlData } = supabase.storage
             .from("gallery")
             .getPublicUrl(filePath);
 
+          const publicUrl = urlData.publicUrl;
+          console.log(`Public URL for ${file.name}:`, publicUrl);
+
           // Insert into database
+          const insertPayload = {
+            title: file.name.split(".")[0] || null,
+            image_url: publicUrl,
+            uploaded_by: user?.id || null,
+          };
+          
+          console.log(`Inserting to gallery_images:`, insertPayload);
+
           const { data: insertedData, error: dbError } = await supabase
             .from("gallery_images")
-            .insert({
-              title: file.name.split(".")[0] || null,
-              image_url: urlData.publicUrl,
-              uploaded_by: user?.id,
-            })
+            .insert(insertPayload)
             .select()
             .single();
 
-          if (dbError) throw dbError;
+          if (dbError) {
+            console.error(`Database insert error for ${file.name}:`, dbError);
+            throw dbError;
+          }
+
+          console.log(`Database insert successful:`, insertedData);
 
           if (insertedData) {
             uploadedImages.push(insertedData);
           }
           
           successCount++;
-        } catch (fileError) {
+        } catch (fileError: any) {
           console.error(`Error uploading ${file.name}:`, fileError);
+          console.error(`Error details:`, JSON.stringify(fileError, null, 2));
           errorCount++;
+          
+          // Show toast for each failed file
+          toast({
+            title: "Greška pri učitavanju",
+            description: `Neuspješno: ${file.name} - ${fileError?.message || 'Nepoznata greška'}`,
+            variant: "destructive",
+          });
         }
 
         // Update progress
