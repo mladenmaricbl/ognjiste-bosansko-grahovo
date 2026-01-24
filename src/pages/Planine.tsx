@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Compass, TrendingUp, Sun, Wind } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
-import dinaraImage from "@/assets/dinara-mountain.jpg";
+import dinaraImage from "@/assets/dinara-new.jpg";
 import satorImage from "@/assets/sator-mountain.jpg";
 import uilicaImage from "@/assets/uilica-mountain.jpg";
 import jadovnikImage from "@/assets/jadovnik-mountain.jpg";
