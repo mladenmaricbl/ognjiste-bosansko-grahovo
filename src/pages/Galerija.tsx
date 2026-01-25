@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, ZoomIn, Trash2, Upload, ImagePlus } from "lucide-react";
+import { X, Plus, ZoomIn, Trash2, Upload, ImagePlus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,7 +36,7 @@ const staticImages = [
 const MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
 
 export default function Galerija() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [dbImages, setDbImages] = useState<GalleryImage[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -258,6 +258,36 @@ export default function Galerija() {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Combine all images for navigation
+  const allImages = [
+    ...dbImages.map(img => ({ src: img.image_url, title: img.title })),
+    ...staticImages.map(img => ({ src: img.src, title: img.category }))
+  ];
+
+  const selectedImage = selectedImageIndex !== null ? allImages[selectedImageIndex]?.src : null;
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (selectedImageIndex === null) return;
+    
+    if (direction === 'prev') {
+      setSelectedImageIndex(selectedImageIndex === 0 ? allImages.length - 1 : selectedImageIndex - 1);
+    } else {
+      setSelectedImageIndex(selectedImageIndex === allImages.length - 1 ? 0 : selectedImageIndex + 1);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (selectedImageIndex === null) return;
+    if (e.key === 'ArrowLeft') navigateImage('prev');
+    if (e.key === 'ArrowRight') navigateImage('next');
+    if (e.key === 'Escape') setSelectedImageIndex(null);
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImageIndex]);
+
   const getTotalSize = () => {
     const totalBytes = selectedFiles.reduce((sum, file) => sum + file.size, 0);
     return (totalBytes / (1024 * 1024)).toFixed(1);
@@ -309,7 +339,7 @@ export default function Galerija() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                   className="relative group cursor-pointer overflow-hidden rounded-lg"
-                  onClick={() => setSelectedImage(image.image_url)}
+                  onClick={() => setSelectedImageIndex(index)}
                 >
                   <img
                     src={image.image_url}
@@ -360,7 +390,7 @@ export default function Galerija() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.05 }}
                 className="relative group cursor-pointer overflow-hidden rounded-lg"
-                onClick={() => setSelectedImage(image.src)}
+                onClick={() => setSelectedImageIndex(dbImages.length + index)}
               >
                 <img
                   src={image.src}
@@ -390,16 +420,48 @@ export default function Galerija() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-foreground/90 flex items-center justify-center p-4"
-            onClick={() => setSelectedImage(null)}
+            onClick={() => setSelectedImageIndex(null)}
           >
+            {/* Close button */}
             <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 p-2 text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-colors"
+              onClick={() => setSelectedImageIndex(null)}
+              className="absolute top-4 right-4 p-2 text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-colors z-10"
               aria-label="Zatvori"
             >
               <X className="h-8 w-8" />
             </button>
+
+            {/* Previous button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateImage('prev');
+              }}
+              className="absolute left-4 md:left-8 p-2 md:p-3 text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-colors z-10"
+              aria-label="Prethodna slika"
+            >
+              <ChevronLeft className="h-8 w-8 md:h-10 md:w-10" />
+            </button>
+
+            {/* Next button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateImage('next');
+              }}
+              className="absolute right-4 md:right-8 p-2 md:p-3 text-primary-foreground hover:bg-primary-foreground/20 rounded-full transition-colors z-10"
+              aria-label="Sljedeća slika"
+            >
+              <ChevronRight className="h-8 w-8 md:h-10 md:w-10" />
+            </button>
+
+            {/* Image counter */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-primary-foreground/80 text-sm bg-foreground/50 px-4 py-2 rounded-full">
+              {selectedImageIndex !== null ? selectedImageIndex + 1 : 0} / {allImages.length}
+            </div>
+
             <motion.img
+              key={selectedImage}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
