@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Mail, MapPin } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const quickLinks = [
@@ -52,25 +52,35 @@ export function Footer() {
             <div className="space-y-3 text-sm text-primary-foreground/70">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>Bosansko Grahovo, Bosna i Hercegovina</span>
+                <span>Maršala Tita bb, Bosansko Grahovo</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 flex-shrink-0" />
+                <a href="tel:+38765321321" className="hover:text-primary-foreground transition-colors">
+                  065/321-321
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0" />
-                <a href="mailto:info@ognjiste-bg.ba" className="hover:text-primary-foreground transition-colors">
-                  info@ognjiste-bg.ba
+                <a href="mailto:ognjistebosanskograhovo@gmail.com" className="hover:text-primary-foreground transition-colors">
+                  ognjistebosanskograhovo@gmail.com
                 </a>
               </div>
             </div>
             <div className="flex gap-4 mt-6">
               <a
-                href="#"
+                href="https://www.facebook.com/Ognjiste.Bosansko.Grahovo/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/ognjiste.bosansko.grahovo/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors"
                 aria-label="Instagram"
               >
