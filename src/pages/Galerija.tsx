@@ -462,13 +462,26 @@ export default function Galerija() {
 
             <motion.img
               key={selectedImage}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ scale: 0.9, opacity: 0, x: 0 }}
+              animate={{ scale: 1, opacity: 1, x: 0 }}
               exit={{ scale: 0.9, opacity: 0 }}
               src={selectedImage}
               alt="Uvećana slika"
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg cursor-grab active:cursor-grabbing"
               onClick={(e) => e.stopPropagation()}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(e, { offset, velocity }) => {
+                const swipe = offset.x * velocity.x;
+                const swipeThreshold = 10000;
+                
+                if (swipe < -swipeThreshold || offset.x < -100) {
+                  navigateImage('next');
+                } else if (swipe > swipeThreshold || offset.x > 100) {
+                  navigateImage('prev');
+                }
+              }}
             />
           </motion.div>
         )}
