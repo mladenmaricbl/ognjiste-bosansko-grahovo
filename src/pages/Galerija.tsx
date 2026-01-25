@@ -455,8 +455,32 @@ export default function Galerija() {
               <ChevronRight className="h-8 w-8 md:h-10 md:w-10" />
             </button>
 
+            {/* Thumbnail strip */}
+            <div 
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 max-w-[90vw] overflow-x-auto px-4 py-3 bg-foreground/60 backdrop-blur-sm rounded-xl scrollbar-thin scrollbar-thumb-primary-foreground/30 scrollbar-track-transparent"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {allImages.map((img, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  className={`flex-shrink-0 w-16 h-12 md:w-20 md:h-14 rounded-md overflow-hidden transition-all duration-200 ${
+                    selectedImageIndex === index 
+                      ? 'ring-2 ring-primary-foreground scale-105 opacity-100' 
+                      : 'opacity-50 hover:opacity-80'
+                  }`}
+                >
+                  <img
+                    src={img.src}
+                    alt={img.title || `Slika ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+
             {/* Image counter */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-primary-foreground/80 text-sm bg-foreground/50 px-4 py-2 rounded-full">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 text-primary-foreground/80 text-sm bg-foreground/50 px-4 py-2 rounded-full">
               {selectedImageIndex !== null ? selectedImageIndex + 1 : 0} / {allImages.length}
             </div>
 
