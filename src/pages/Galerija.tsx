@@ -309,18 +309,19 @@ export default function Galerija() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                   className="relative group cursor-pointer overflow-hidden rounded-lg"
+                  onClick={() => setSelectedImage(image.image_url)}
                 >
                   <img
                     src={image.image_url}
                     alt={image.title || "Galerija slika"}
+                    loading="lazy"
                     className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                    onClick={() => setSelectedImage(image.image_url)}
                   />
-                  <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center pointer-events-none">
                     <ZoomIn className="text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-10 w-10" />
                   </div>
                   {image.title && (
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-foreground/80 to-transparent">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-foreground/80 to-transparent pointer-events-none">
                       <span className="text-primary-foreground text-sm font-medium">
                         {image.title}
                       </span>
@@ -332,7 +333,7 @@ export default function Galerija() {
                         e.stopPropagation();
                         handleDelete(image);
                       }}
-                      className="absolute top-2 right-2 p-2 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
+                      className="absolute top-2 right-2 p-2 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90 z-10"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -364,12 +365,13 @@ export default function Galerija() {
                 <img
                   src={image.src}
                   alt={image.alt}
+                  loading="lazy"
                   className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center">
+                <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/40 transition-colors duration-300 flex items-center justify-center pointer-events-none">
                   <ZoomIn className="text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 h-10 w-10" />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-foreground/80 to-transparent">
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-foreground/80 to-transparent pointer-events-none">
                   <span className="text-primary-foreground text-sm font-medium">
                     {image.category}
                   </span>
