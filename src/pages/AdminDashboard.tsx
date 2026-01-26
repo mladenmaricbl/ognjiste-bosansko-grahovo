@@ -40,6 +40,7 @@ export default function AdminDashboard() {
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -91,12 +92,54 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleFileSelect = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Greška",
+        description: "Molimo odaberite sliku.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set dragging to false if we're leaving the drop zone entirely
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileSelect(files[0]);
     }
   };
 
@@ -307,7 +350,15 @@ export default function AdminDashboard() {
                       </label>
                       <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-200 ${
+                          isDragging 
+                            ? "border-primary bg-primary/10 scale-[1.02]" 
+                            : "border-border hover:border-primary/50"
+                        }`}
                       >
                         {previewUrl ? (
                           <div className="relative">
@@ -317,14 +368,19 @@ export default function AdminDashboard() {
                               className="max-h-48 mx-auto rounded-lg object-cover"
                             />
                             <p className="text-sm text-muted-foreground mt-2">
-                              Kliknite za promjenu slike
+                              Kliknite ili prevucite novu sliku za promjenu
                             </p>
                           </div>
                         ) : (
                           <div className="space-y-2">
-                            <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
-                              Kliknite za odabir slike
+                            <div className={`transition-transform duration-200 ${isDragging ? "scale-110" : ""}`}>
+                              <Upload className={`h-10 w-10 mx-auto ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+                            </div>
+                            <p className={`text-sm ${isDragging ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                              {isDragging ? "Ispustite sliku ovdje" : "Prevucite sliku ovdje ili kliknite za odabir"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              PNG, JPG, GIF do 10MB
                             </p>
                           </div>
                         )}
