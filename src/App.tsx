@@ -8,8 +8,10 @@ import Home from "./pages/Home";
 import GradISela from "./pages/GradISela";
 import Planine from "./pages/Planine";
 import Galerija from "./pages/Galerija";
+import Aktivnosti from "./pages/Aktivnosti";
 import ONama from "./pages/ONama";
 import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,8 +28,10 @@ const App = () => (
             <Route path="/grad-i-sela" element={<GradISela />} />
             <Route path="/planine" element={<Planine />} />
             <Route path="/galerija" element={<Galerija />} />
+            <Route path="/aktivnosti" element={<Aktivnosti />} />
             <Route path="/o-nama" element={<ONama />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

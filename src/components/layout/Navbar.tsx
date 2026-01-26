@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/grad-i-sela", label: "Grad i sela" },
   { href: "/planine", label: "Planine" },
   { href: "/galerija", label: "Galerija" },
+  { href: "/aktivnosti", label: "Aktivnosti" },
   { href: "/o-nama", label: "O nama" },
 ];
 
