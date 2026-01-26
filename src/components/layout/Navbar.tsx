@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdmin } from "@/hooks/useAdmin";
 import logo from "@/assets/logo.png";
 
 const navLinks = [
@@ -19,6 +20,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
@@ -50,11 +52,27 @@ export function Navbar() {
               </Link>
             ))}
             
+            {/* Admin Dashboard Link */}
+            {user && isAdmin && (
+              <Link
+                to="/admin"
+                className={cn(
+                  "ml-2 p-2 rounded-md transition-colors",
+                  location.pathname === "/admin"
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+                title="Admin Dashboard"
+              >
+                <Settings className="h-5 w-5" />
+              </Link>
+            )}
+            
             {/* Admin Login/Logout Icon */}
             {user ? (
               <button
                 onClick={() => signOut()}
-                className="ml-2 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="ml-1 p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 title="Odjavi se"
               >
                 <LogOut className="h-5 w-5" />
@@ -106,6 +124,23 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              
+              {/* Mobile Admin Dashboard Link */}
+              {user && isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-3 rounded-md text-base font-medium transition-colors",
+                    location.pathname === "/admin"
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <Settings className="h-5 w-5" />
+                  Admin Dashboard
+                </Link>
+              )}
               
               {/* Mobile Admin Login/Logout */}
               {user ? (
