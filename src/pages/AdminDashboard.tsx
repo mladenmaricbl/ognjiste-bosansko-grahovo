@@ -20,8 +20,10 @@ import {
   Calendar,
   Shield,
   Pencil,
-  X
+  X,
+  BarChart3
 } from "lucide-react";
+import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
 import {
   Dialog,
   DialogContent,
@@ -485,8 +487,25 @@ export default function AdminDashboard() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-muted-foreground"
           >
-            Upravljanje aktivnostima
+            Upravljanje aktivnostima i analitika
           </motion.p>
+        </div>
+      </section>
+
+      {/* Analytics Section */}
+      <section className="py-8 md:py-12 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <BarChart3 className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-serif font-bold">Analitika stranice</h2>
+            </div>
+            <AnalyticsDashboard />
+          </motion.div>
         </div>
       </section>
 
@@ -550,6 +569,33 @@ export default function AdminDashboard() {
                           </div>
                         )}
                       </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {/* Title */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Naslov *
+                      </label>
+                      <Input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Unesite naslov aktivnosti"
+                        required
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">
+                        Opis
+                      </label>
                       <input
                         ref={fileInputRef}
                         type="file"
