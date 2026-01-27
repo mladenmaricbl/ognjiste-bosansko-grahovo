@@ -18,8 +18,16 @@ import {
   Plus, 
   Image as ImageIcon,
   Calendar,
-  Shield
+  Shield,
+  Pencil,
+  X
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Activity {
   id: string;
@@ -47,6 +55,16 @@ export default function AdminDashboard() {
   const [description, setDescription] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Edit state
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
+  const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+  const [isEditDragging, setIsEditDragging] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -284,6 +302,153 @@ export default function AdminDashboard() {
     });
   };
 
+  // Edit handlers
+  const openEditDialog = (activity: Activity) => {
+    setEditingActivity(activity);
+    setEditTitle(activity.title);
+    setEditDescription(activity.description || "");
+    setEditPreviewUrl(activity.image_url);
+    setEditSelectedFile(null);
+  };
+
+  const closeEditDialog = () => {
+    setEditingActivity(null);
+    setEditTitle("");
+    setEditDescription("");
+    setEditSelectedFile(null);
+    setEditPreviewUrl(null);
+  };
+
+  const handleEditFileSelect = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Greška",
+        description: "Molimo odaberite sliku.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setEditSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setEditPreviewUrl(url);
+  };
+
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleEditFileSelect(file);
+    }
+  };
+
+  const handleEditDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditDragging(true);
+  };
+
+  const handleEditDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsEditDragging(false);
+  };
+
+  const handleEditDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleEditDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleEditFileSelect(files[0]);
+    }
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingActivity) return;
+
+    if (!editTitle.trim()) {
+      toast({
+        title: "Greška",
+        description: "Naslov je obavezan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUpdating(true);
+
+    try {
+      let imageUrl = editingActivity.image_url;
+
+      // If a new file is selected, upload it
+      if (editSelectedFile) {
+        const fileName = generateUniqueFileName(editSelectedFile.name);
+        const filePath = `activities/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("activities")
+          .upload(filePath, editSelectedFile);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from("activities")
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+
+        // Delete old image
+        const oldUrl = new URL(editingActivity.image_url);
+        const pathParts = oldUrl.pathname.split('/');
+        const bucketIndex = pathParts.findIndex(p => p === 'activities');
+        if (bucketIndex !== -1) {
+          const oldFilePath = pathParts.slice(bucketIndex + 1).join('/');
+          await supabase.storage
+            .from("activities")
+            .remove([oldFilePath]);
+        }
+      }
+
+      // Update activity record
+      const { error: updateError } = await supabase
+        .from("activities")
+        .update({
+          title: editTitle.trim(),
+          description: editDescription.trim() || null,
+          image_url: imageUrl,
+        })
+        .eq("id", editingActivity.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Uspješno",
+        description: "Aktivnost je ažurirana.",
+      });
+
+      closeEditDialog();
+      fetchActivities();
+    } catch (error: any) {
+      console.error("Error updating activity:", error);
+      toast({
+        title: "Greška",
+        description: error.message || "Nije moguće ažurirati aktivnost.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   if (authLoading || adminLoading) {
     return (
       <Layout>
@@ -488,19 +653,29 @@ export default function AdminDashboard() {
                               </p>
                             )}
                           </div>
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => handleDelete(activity)}
-                            disabled={deleting === activity.id}
-                            className="flex-shrink-0"
-                          >
-                            {deleting === activity.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => openEditDialog(activity)}
+                              className="h-9 w-9"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => handleDelete(activity)}
+                              disabled={deleting === activity.id}
+                              className="h-9 w-9"
+                            >
+                              {deleting === activity.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -511,6 +686,112 @@ export default function AdminDashboard() {
           </div>
         </div>
       </section>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingActivity} onOpenChange={(open) => !open && closeEditDialog()}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5" />
+              Uredi aktivnost
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdate} className="space-y-6 mt-4">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Slika
+              </label>
+              <div
+                onClick={() => editFileInputRef.current?.click()}
+                onDragEnter={handleEditDragEnter}
+                onDragLeave={handleEditDragLeave}
+                onDragOver={handleEditDragOver}
+                onDrop={handleEditDrop}
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-200 ${
+                  isEditDragging 
+                    ? "border-primary bg-primary/10 scale-[1.02]" 
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                {editPreviewUrl ? (
+                  <div className="relative">
+                    <img
+                      src={editPreviewUrl}
+                      alt="Preview"
+                      className="max-h-48 mx-auto rounded-lg object-cover"
+                    />
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Kliknite ili prevucite novu sliku za promjenu
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className={`transition-transform duration-200 ${isEditDragging ? "scale-110" : ""}`}>
+                      <Upload className={`h-10 w-10 mx-auto ${isEditDragging ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <p className={`text-sm ${isEditDragging ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                      {isEditDragging ? "Ispustite sliku ovdje" : "Prevucite sliku ovdje ili kliknite za odabir"}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={editFileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleEditFileChange}
+                className="hidden"
+              />
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Naslov *
+              </label>
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Unesite naslov aktivnosti"
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Opis
+              </label>
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Unesite opis aktivnosti..."
+                rows={5}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={closeEditDialog} className="flex-1">
+                Odustani
+              </Button>
+              <Button type="submit" disabled={updating} className="flex-1">
+                {updating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Ažuriranje...
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Spremi promjene
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
