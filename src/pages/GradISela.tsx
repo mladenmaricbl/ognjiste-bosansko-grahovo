@@ -56,7 +56,7 @@ Iznad sela se proteže planina Ujilica, kada se popnete na njene vrhove imate pr
     name: "Obljaj",
     description: `Obljaj je naseljeno mjesto u Bosni i Hercegovini, u opštini Bosansko Grahovo, koje administrativno pripada Federaciji Bosne i Hercegovine. Prema popisu stanovništva iz 2013. u naselju je živjelo 108 stanovnika. Prema opisu iz 1891. godine selo Obljaj je smešteno pod glavicom Obljojom ili Obljajkom. Po tom brdu je mesto ime dobilo. To je vrlo lepo selo, ali bez ikakvih starina.
 
-U mesnoj parohiji "Obljaj" 1827. godine službuje pravoslavni sveštenik pop Nikola Lončar. Krajem 19. veka selo Obljaj je u sastavu pravoslavne parohije Grahovo. U mjestu žive pravoslavci ali je nešto više katolika. Tu je rimokatolički župni ured sa stanom za župnika.
+U mesnoj parohiji "Obljaj" 1827. godine službuje pravoslavni sveštenik pop Nikola Lončar. Krajem 19. veka selo Obljaj je u sastavu pravoslavne parohije Grahovo. U mjestu žive pravoslavci ali i katolici. Tu je rimokatolički župni ured sa stanom za župnika.
 
 Pred Drugi svetski rat delovalo je Nacionalno društvo "Krajišnik" sa sedištem u Sarajevu. To srpsko društvo je radilo na njegovanju uspomene na velikog mučenika Gavrila Principa. Kada je poznati srpski vajar Đoka Jovanović završio bistu Gavrilovu, maja 1940. godine beogradski pododbor je rešio da se ista postavi u Bosanskom Grahovu. Tamo je tada završavan spomen-dom posvećen Principu, ispred kojeg je postavljena njegova bista.
 
