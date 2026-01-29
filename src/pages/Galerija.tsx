@@ -34,6 +34,36 @@ const staticImages = [
 ];
 
 const MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+// Helper function to get user-friendly error messages
+function getUserFriendlyError(error: any, context: 'upload' | 'delete'): string {
+  const msg = error?.message?.toLowerCase() || '';
+  
+  if (msg.includes('policy') || msg.includes('permission') || msg.includes('denied')) {
+    return 'Nemate dozvolu za ovu operaciju';
+  }
+  if (msg.includes('size') || msg.includes('too large')) {
+    return 'Datoteka je prevelika';
+  }
+  if (msg.includes('storage') || msg.includes('bucket')) {
+    return context === 'upload' 
+      ? 'Greška pri spremanju slike' 
+      : 'Greška pri brisanju slike';
+  }
+  if (msg.includes('network') || msg.includes('fetch')) {
+    return 'Greška u mreži. Provjerite internet vezu';
+  }
+  if (msg.includes('duplicate')) {
+    return 'Slika s ovim imenom već postoji';
+  }
+  
+  return context === 'upload'
+    ? 'Došlo je do greške pri učitavanju. Pokušajte ponovo.'
+    : 'Došlo je do greške pri brisanju. Pokušajte ponovo.';
+}
 
 export default function Galerija() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -88,8 +118,13 @@ export default function Galerija() {
         const file = selectedFiles[i];
         
         try {
-          // Generate unique filename with random string to avoid collisions
+          // Validate file extension
           const fileExt = file.name.split(".").pop()?.toLowerCase() || 'jpg';
+          if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+            throw new Error(`Nedozvoljen tip datoteke: ${fileExt}`);
+          }
+          
+          // Generate unique filename with random string to avoid collisions
           const randomId = Math.random().toString(36).substring(2, 10);
           const fileName = `${Date.now()}-${randomId}-${i}.${fileExt}`;
           const filePath = `images/${fileName}`;
@@ -147,13 +182,12 @@ export default function Galerija() {
           successCount++;
         } catch (fileError: any) {
           console.error(`Error uploading ${file.name}:`, fileError);
-          console.error(`Error details:`, JSON.stringify(fileError, null, 2));
           errorCount++;
           
-          // Show toast for each failed file
+          // Show toast for each failed file with user-friendly message
           toast({
             title: "Greška pri učitavanju",
-            description: `Neuspješno: ${file.name} - ${fileError?.message || 'Nepoznata greška'}`,
+            description: `Neuspješno: ${file.name} - ${getUserFriendlyError(fileError, 'upload')}`,
             variant: "destructive",
           });
         }
@@ -186,7 +220,7 @@ export default function Galerija() {
       console.error("Upload error:", error);
       toast({
         title: "Greška",
-        description: error.message || "Došlo je do greške pri učitavanju",
+        description: getUserFriendlyError(error, 'upload'),
         variant: "destructive",
       });
     } finally {
@@ -228,7 +262,7 @@ export default function Galerija() {
       console.error("Delete error:", error);
       toast({
         title: "Greška",
-        description: error.message || "Došlo je do greške pri brisanju",
+        description: getUserFriendlyError(error, 'delete'),
         variant: "destructive",
       });
     }
@@ -238,6 +272,42 @@ export default function Galerija() {
     const files = Array.from(e.target.files || []);
     
     if (files.length === 0) return;
+
+    // Validate MIME types
+    const invalidTypes = files.filter(f => !ALLOWED_MIME_TYPES.includes(f.type));
+    if (invalidTypes.length > 0) {
+      toast({
+        title: "Nedozvoljeni format",
+        description: "Dozvoljeni su samo JPEG, PNG, GIF i WebP formati",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate individual file sizes
+    const oversizedFiles = files.filter(f => f.size > MAX_FILE_SIZE);
+    if (oversizedFiles.length > 0) {
+      toast({
+        title: "Datoteka prevelika",
+        description: `${oversizedFiles.length} ${oversizedFiles.length === 1 ? 'slika prelazi' : 'slika prelaze'} limit od 10MB`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file extensions
+    const invalidExtensions = files.filter(f => {
+      const ext = f.name.split('.').pop()?.toLowerCase() || '';
+      return !ALLOWED_EXTENSIONS.includes(ext);
+    });
+    if (invalidExtensions.length > 0) {
+      toast({
+        title: "Nedozvoljeni format",
+        description: "Dozvoljeni su samo JPEG, PNG, GIF i WebP formati",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Calculate total size
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
