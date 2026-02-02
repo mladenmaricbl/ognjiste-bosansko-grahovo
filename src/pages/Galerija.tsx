@@ -86,7 +86,7 @@ export default function Galerija() {
   async function fetchImages() {
     const { data, error } = await supabase
       .from("gallery_images")
-      .select("*")
+      .select("id, title, description, image_url, created_at")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -157,7 +157,6 @@ export default function Galerija() {
           const insertPayload = {
             title: file.name.split(".")[0] || null,
             image_url: publicUrl,
-            uploaded_by: user?.id || null,
           };
           
           console.log(`Inserting to gallery_images:`, insertPayload);

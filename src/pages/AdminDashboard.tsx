@@ -216,7 +216,6 @@ export default function AdminDashboard() {
           title: title.trim(),
           description: description.trim() || null,
           image_url: publicUrl,
-          uploaded_by: user?.id,
         });
 
       if (insertError) throw insertError;
