@@ -33,7 +33,7 @@ export default function Aktivnosti() {
       // First get total count
       const { count, error: countError } = await supabase
         .from("activities")
-        .select("*", { count: "exact", head: true });
+        .select("id", { count: "exact", head: true });
 
       if (countError) throw countError;
       setTotalCount(count || 0);
@@ -44,7 +44,7 @@ export default function Aktivnosti() {
 
       const { data, error } = await supabase
         .from("activities")
-        .select("*")
+        .select("id, title, description, image_url, created_at")
         .order("created_at", { ascending: false })
         .range(from, to);
 

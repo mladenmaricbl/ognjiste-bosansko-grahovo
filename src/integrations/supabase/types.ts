@@ -21,7 +21,6 @@ export type Database = {
           id: string
           image_url: string
           title: string
-          uploaded_by: string | null
         }
         Insert: {
           created_at?: string
@@ -29,7 +28,6 @@ export type Database = {
           id?: string
           image_url: string
           title: string
-          uploaded_by?: string | null
         }
         Update: {
           created_at?: string
@@ -37,7 +35,6 @@ export type Database = {
           id?: string
           image_url?: string
           title?: string
-          uploaded_by?: string | null
         }
         Relationships: []
       }
@@ -49,7 +46,6 @@ export type Database = {
           image_url: string
           title: string | null
           updated_at: string
-          uploaded_by: string | null
         }
         Insert: {
           created_at?: string
@@ -58,7 +54,6 @@ export type Database = {
           image_url: string
           title?: string | null
           updated_at?: string
-          uploaded_by?: string | null
         }
         Update: {
           created_at?: string
@@ -67,7 +62,30 @@ export type Database = {
           image_url?: string
           title?: string | null
           updated_at?: string
-          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      upload_tracking: {
+        Row: {
+          created_at: string
+          id: string
+          record_id: string
+          table_name: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          record_id: string
+          table_name: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          record_id?: string
+          table_name?: string
+          uploaded_by?: string
         }
         Relationships: []
       }
@@ -97,6 +115,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_uploaded_by_if_admin: {
+        Args: { original_uploaded_by: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
