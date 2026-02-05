@@ -7,22 +7,26 @@ import preodacImg from "@/assets/preodac.jpg";
 import peciImg from "@/assets/peci.jpg";
 import obljajImg from "@/assets/obljaj.jpg";
 import stozistaImg from "@/assets/stozista.jpg";
+import resanovciImg from "@/assets/resanovci.jpg";
+import unistaImg from "@/assets/unista.jpg";
+import crniLugImg from "@/assets/crni-lug.jpg";
+import koritaImg from "@/assets/korita.jpg";
 const simpleVillages = [{
   name: "Resanovci",
   description: "Tradicionalno selo poznato po očuvanoj arhitekturi i gostoljubivim domaćinima.",
-  image: village1
+  image: resanovciImg
 }, {
   name: "Uništa",
   description: "Mirno selo smješteno u srcu zelene doline, idealno za bijeg od gradske vreve.",
-  image: village2
+  image: unistaImg
 }, {
   name: "Crni Lug",
   description: "Poznato po tradicionalnim običajima i predivnom pogledu na okolne planine.",
-  image: village1
+  image: crniLugImg
 }, {
   name: "Korita",
   description: "Selo okruženo šumama, savršeno za ljubitelje prirode i mira.",
-  image: village2
+  image: koritaImg
 }];
 const detailedVillages = [{
   name: "Preodac",
